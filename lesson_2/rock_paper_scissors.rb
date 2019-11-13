@@ -1,5 +1,3 @@
-require 'pry'
-
 VALID_CHOICES = ["rock", "paper", "scissors", "lizard", "spock"]
 CHOICE_ABBREVIATIONS = ["r", "p", "sc", "l", "sp"]
 
@@ -19,49 +17,71 @@ def transform_abbreviation(selection)
 end
 
 def win?(first, second)
-  (first == 'rock' && second == 'scissors') ||
-    (first == 'rock' && second == 'lizard') ||
-    (first == 'paper' && second == 'rock') ||
-    (first == 'paper' && second == 'spock') ||
-    (first == 'scissors' && second == 'paper') ||
-    (first == 'scissors' && second == 'lizard') ||
-    (first == 'lizard' && second == 'paper') ||
-    (first == 'lizard' && second == 'spock') ||
-    (first == 'spock' && second == 'rock') ||
-    (first == 'spock' && second == 'scissors')
+  winning_combinations = {
+    rock: ['scissors', 'lizard'],
+    paper: ['rock', 'spock'],
+    scissors: ['paper', 'lizard'],
+    lizard: ['paper', 'spock'],
+    spock: ['rock', 'scissors']
+  }
+
+  winning_combinations[first.to_sym].include?(second)
 end
 
 def display_results(player, computer)
   if win?(player, computer)
-    prompt("You won!")
+    "You won!"
   elsif win?(computer, player)
-    prompt("Computer won!")
+    "Computer won!"
   else
-    prompt("It's a tie!")
+    "It's a tie!"
   end
 end
 
 loop do
-  choice = ''
+  player_wins = 0
+  comp_wins = 0
+  ties = 0
   loop do
-    prompt("Choose one: #{VALID_CHOICES.join(', ')}")
-    choice = gets.chomp.downcase
+    choice = ''
+    loop do
+      prompt("Choose one: #{VALID_CHOICES.join(', ')}")
+      choice = gets.chomp.downcase
 
-    if VALID_CHOICES.include?(choice)
-      break
-    elsif CHOICE_ABBREVIATIONS.include?(choice)
-      choice = transform_abbreviation(choice)
+      if VALID_CHOICES.include?(choice)
+        break
+      elsif CHOICE_ABBREVIATIONS.include?(choice)
+        choice = transform_abbreviation(choice)
+        break
+      else
+        prompt("That's not a valid choice")
+      end
+    end
+
+    computer_choice = VALID_CHOICES.sample
+
+    prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
+
+    outcome = display_results(choice, computer_choice)
+    prompt(outcome)
+
+    if outcome == "You won!"
+      player_wins += 1
+    elsif outcome == "Computer won!"
+      comp_wins += 1
+    else
+      ties += 1
+    end
+
+    if player_wins == 5 || comp_wins == 5
+      prompt("Game Over!")
+      prompt("Final Score: You #{player_wins}, Computer #{comp_wins}, Ties #{ties}")
       break
     else
-      prompt("That's not a valid choice")
+      prompt("Score: You #{player_wins}, Computer #{comp_wins}, Ties #{ties}")
+      prompt("Next Round")
     end
   end
-
-  computer_choice = VALID_CHOICES.sample
-
-  prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
-
-  display_results(choice, computer_choice)
 
   prompt("Do you want to play again? (Y/N)")
   play_again = gets.chomp
