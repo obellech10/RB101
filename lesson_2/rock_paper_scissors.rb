@@ -1,5 +1,3 @@
-require 'pry'
-
 VALID_CHOICES = ["rock", "paper", "scissors", "lizard", "spock"]
 CHOICE_ABBREVIATIONS = ["r", "p", "sc", "l", "sp"]
 WINNING_SCORE = 5
@@ -100,15 +98,15 @@ def keeping_score(outcome)
   score
 end
 
-def game_over(score)
+def game_over?(score)
   if score[:player_wins] == WINNING_SCORE ||
-    score[:comp_wins] == WINNING_SCORE
+     score[:comp_wins] == WINNING_SCORE
     prompt("Game Over!")
-    prompt("Final Score: You #{score[:player_wins]}, Computer #{score[:comp_wins]}, Ties #{score[:ties]}")
+    prompt("Final Score You: #{score[:player_wins]} Computer: #{score[:comp_wins]} Ties: #{score[:ties]}")
     puts ''
     true
   else
-    prompt("Score: You #{score[:player_wins]}, Computer #{score[:comp_wins]}, Ties #{score[:ties]}")
+    prompt("Score You: #{score[:player_wins]} Computer: #{score[:comp_wins]} Ties: #{score[:ties]}")
     puts ''
     prompt("On to the next round...")
     false
@@ -140,7 +138,7 @@ loop do
     score = keeping_score(outcome)
     scoreboard[score.key(1)] += 1
 
-    break if game_over(scoreboard) == true
+    break if game_over?(scoreboard) == true
   end
 
   break unless play_again.start_with?('y')
