@@ -1,15 +1,14 @@
-require 'pry'
-
-system('clear')
-
 CARD_VALUES = {
-  h2: 2, h3: 3, h4: 4, h5: 5, h6: 6, h7: 7, h8: 8, h9: 9, h10: 10, hj: 10,
-  hq: 10, hk: 10, ha: 11, c2: 2, c3: 3, c4: 4, c5: 5, c6: 6, c7: 7, c8: 8,
-  c9: 9, c10: 10, cj: 10, cq: 10, ck: 10, ca: 11, d2: 2, d3: 3, d4: 4, d5: 5,
-  d6: 6, d7: 7, d8: 8, d9: 9, d10: 10, dj: 10, dq: 10, dk: 10, da: 11, s2: 2,
-  s3: 3, s4: 4, s5: 5, s6: 6, s7: 7, s8: 8, s9: 9, s10: 10, sj: 10, sq: 10,
-  sk: 10, sa: 11
+  H2: 2, H3: 3, H4: 4, H5: 5, H6: 6, H7: 7, H8: 8, H9: 9, H10: 10, HJ: 10,
+  HQ: 10, HK: 10, HA: 11, C2: 2, C3: 3, C4: 4, C5: 5, C6: 6, C7: 7, C8: 8,
+  C9: 9, C10: 10, CJ: 10, CQ: 10, CK: 10, CA: 11, D2: 2, D3: 3, D4: 4, D5: 5,
+  D6: 6, D7: 7, D8: 8, D9: 9, D10: 10, DJ: 10, DQ: 10, DK: 10, DA: 11, S2: 2,
+  S3: 3, S4: 4, S5: 5, S6: 6, S7: 7, S8: 8, S9: 9, S10: 10, SJ: 10, SQ: 10,
+  SK: 10, SA: 11
 }
+
+MAX_WIN_TOTAL = 21
+DEALER_STAY_TOTAL = 17
 
 def prompt(message)
   puts "=> #{message}"
@@ -23,8 +22,7 @@ def game_intro
   prompt("Welcome to the game of Twenty-One.")
   prompt("The goal is to get as close to 21 as possible, without going over.")
   prompt("If you go over 21, it's a 'bust' and you lose.")
-  prompt("Let's begin...")
-  puts ''
+  prompt("First to 5 wins. Let's begin...\n ")
 end
 
 def total(hand)
@@ -38,20 +36,24 @@ def total(hand)
     total += CARD_VALUES[card.to_sym]
   end
 
-  if total > 21 && aces > 0
+  if total > MAX_WIN_TOTAL && aces > 0
     aces.times do
-      total -= 10 if total > 21
+      total -= 10 if total > MAX_WIN_TOTAL
     end
   end
   total
 end
 
-def winner(dealer, player)
+def compare_hands(dealer, player)
   if total(dealer) == total(player)
     'a push'
   else
     total(dealer) > total(player) ? 'dealer wins' : 'player wins'
   end
+end
+
+def declare_winner(outcome)
+  prompt("The result is, #{outcome}!\n ")
 end
 
 def play_again?
@@ -87,6 +89,10 @@ end
 
 def deal_cards(deck, amount)
   deck.shift(amount)
+end
+
+def reshuffle
+  initialize_deck
 end
 
 def player_turn(player_hand, dealer_hand, deck)
@@ -130,8 +136,8 @@ def player_hit(hand, deck)
 end
 
 def player_busted?(hand)
-  if total(hand) > 21
-    prompt("You busted!")
+  if total(hand) > MAX_WIN_TOTAL
+    prompt("You busted.")
     prompt("Hand: #{hand} Total: #{total(hand)}\n ")
     true
   else
@@ -143,7 +149,7 @@ def dealer_turn(dealer_hand, deck)
   outcome = nil
   loop do
     decision = dealer_decision(dealer_hand, deck)
-    if decision == 'player'
+    if decision == 'player wins'
       outcome = decision
       break
     elsif decision == 'stay'
@@ -156,17 +162,46 @@ end
 def dealer_decision(dealer_hand, deck)
   outcome = nil
   prompt("The dealers hand is: #{dealer_hand} Total: #{total(dealer_hand)}")
-  if total(dealer_hand) > 21
-    prompt("The dealer busted. You win!\n ")
-    outcome = 'player'
-  elsif total(dealer_hand) >= 17
-    prompt("The dealer stays")
+  if total(dealer_hand) > MAX_WIN_TOTAL
+    prompt("The dealer busted.\n ")
+    outcome = 'player wins'
+  elsif total(dealer_hand) >= DEALER_STAY_TOTAL
+    prompt("The dealer stays.\n ")
     outcome = 'stay'
   else
     dealer_hand << deck.shift
-    prompt("The dealer will hit\n ")
+    prompt("The dealer will hit.\n ")
   end
   outcome
+end
+
+def keeping_score(result, score)
+  case result
+  when 'dealer wins' then score[:dealer] += 1
+  when 'player wins' then score[:player] += 1
+  else score[:push] += 1
+  end
+end
+
+def return_score(score)
+  prompt("The score is, " \
+        "Player: #{score[:player]} " \
+        "Dealer: #{score[:dealer]} " \
+        "Push: #{score[:push]}\n ")
+end
+
+def match_over?(score)
+  if score[:player] == 5 || score[:dealer] == 5
+    prompt("#{score.key(5).capitalize} wins the match!!\n ")
+    true
+  end
+end
+
+def deal_next_hand
+  prompt("Press any key to continue...")
+  gets.chomp
+  clear
+  game_intro
 end
 
 # start of game
@@ -176,29 +211,40 @@ deck = initialize_deck
 loop do
   clear
   game_intro
+  score = { player: 0, dealer: 0, push: 0 }
   _outcome = nil
 
-  if deck.count < 10
-    deck = initialize_deck
-    prompt("Reshuffling the deck...")
-  end
+  loop do
+    if deck.count < 10
+      deck = reshuffle
+      prompt("Reshuffling the deck...")
+    end
 
-  player_hand = deal_cards(deck, 2)
-  dealer_hand = deal_cards(deck, 2)
+    player_hand = deal_cards(deck, 2)
+    dealer_hand = deal_cards(deck, 2)
 
-  # player loop
-  outcome = player_turn(player_hand, dealer_hand, deck)
+    # player loop
+    outcome = player_turn(player_hand, dealer_hand, deck)
 
-  # dealer loop
-  if outcome.nil?
-    outcome = dealer_turn(dealer_hand, deck)
-  end
+    # dealer loop
+    if outcome.nil?
+      outcome = dealer_turn(dealer_hand, deck)
+    end
 
-  # compare hands to determine winner
-  if outcome.nil?
-    outcome = winner(dealer_hand, player_hand)
-    prompt("The result is, #{outcome}!\n ")
+    # compare hands to determine winner
+    if outcome.nil?
+      outcome = compare_hands(dealer_hand, player_hand)
+    end
+
+    declare_winner(outcome)
+
+    keeping_score(outcome, score)
+    return_score(score)
+    break if match_over?(score)
+    deal_next_hand
   end
 
   break unless play_again?
 end
+
+prompt("Thanks for playing 21. Good bye!")
