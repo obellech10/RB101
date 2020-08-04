@@ -172,6 +172,56 @@ puts featured(21) == 35
 puts featured(997) == 1029
 puts featured(1029) == 1043
 puts featured(999_999) == 1_023_547
-puts featured(999_999_987) == 1_023_456_987
-puts featured(9_999_999_999)
+# puts featured(999_999_987) == 1_023_456_987
+# puts featured(9_999_999_999)
 puts
+
+problem("Bubble Sort")
+
+def bubble_sort!(array)
+  loop do
+    none_swapped = 0
+    array.each_with_index do |element, index|
+      if (element <=> array[index + 1]) == 1
+        array.delete_at(index)
+        array.insert(index + 1, element)
+      else
+        none_swapped += 1
+      end
+    end
+    break if none_swapped == (array.length - 1)
+  end
+end
+
+array = [5, 3]
+bubble_sort!(array)
+p array == [3, 5]
+
+array = [6, 2, 7, 1, 4]
+bubble_sort!(array)
+p array == [1, 2, 4, 6, 7]
+
+array = %w(Sue Pete Alice Tyler Rachel Kim Bonnie)
+bubble_sort!(array)
+p array == %w(Alice Bonnie Kim Pete Rachel Sue Tyler)
+puts
+
+problem("Square of Sums - Sum of Squares")
+
+def sum_square_difference(integer)
+  array_of_numbers = (1..integer).to_a
+  square_of_sums = array_of_numbers.sum ** 2
+  sum_of_squares = 0
+
+  array_of_numbers.each do |number|
+    sum_of_squares += number ** 2
+  end
+
+  square_of_sums - sum_of_squares
+end
+
+p sum_square_difference(3) == 22
+   # -> (1 + 2 + 3)**2 - (1**2 + 2**2 + 3**2)
+p sum_square_difference(10) == 2640
+p sum_square_difference(1) == 0
+p sum_square_difference(100) == 25164150

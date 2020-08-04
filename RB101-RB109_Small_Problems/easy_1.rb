@@ -73,26 +73,34 @@ puts ''
 
 # Reverse it Part 1
 problem("Reverse it, part 1")
-# def reverse_sentence(message)
-#   array = message.split(' ')
-#   reverse = []
-#   counter = array.count
-#   loop do
-#     break if counter == 0
-#     reverse << array.pop
-#     counter -= 1
-#   end
-#   reverse.join(" ")
-# end
-
 def reverse_sentence(message)
-  message.split(' ').reverse.join(" ")
+  array = message.split(' ')
+  reverse = []
+  counter = array.count
+  loop do
+    break if counter == 0
+    reverse << array.pop
+    counter -= 1
+  end
+  reverse.join(" ")
 end
+
+# def reverse_sentence(message)
+#   message.split(' ').reverse.join(" ")
+# end
 
 puts reverse_sentence('') == ''
 puts reverse_sentence('Hello World') == 'World Hello'
 puts reverse_sentence('Reverse these words') == 'words these Reverse'
 puts ''
+
+def reverse_array(array)
+  reversed_array = []
+  array.each { |element| reversed_array.unshift(element) }
+  reversed_array
+end
+
+p reverse_array([2, 4, 6, 2, 9]) == [9, 2, 6, 4, 2]
 
 # Reverse it Part 2
 problem("Reverse it, part 2")
